@@ -1,0 +1,20 @@
+# 二进制
+/cnb2api
+*.exe
+
+# 配置（含敏感 key）
+config.json
+config.local.json
+
+# 凭证/数据
+auths/
+data/
+*.db
+*.sqlite
+
+# 日志
+*.log
+/tmp/
+
+# 系统
+.DS_Store
