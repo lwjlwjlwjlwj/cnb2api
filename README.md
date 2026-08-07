@@ -8,6 +8,7 @@
 ## 功能特性
 
 - 🔓 **免登录** — 自动从 CNB 首页获取 CSRF 凭证（`csrfkey` cookie + `csrftoken` header 配对），无需账号即可调用
+- 🤖 **双模型支持** — `deepseek-v4-flash` + `deepseek-v4-pro`（均透传至 CNB 上游）
 - 🔄 **弹性凭证池** — 并发获取多个独立会话凭证，round-robin 轮转，天然支持并发请求
 - 🔧 **自动维护** — 凭证过期自动淘汰、补充、健康检查、连续失败自动失效
 - 📡 **SSE 流式** — 流式透传上游 SSE；非流式自动聚合 `content` + `reasoning_content`
@@ -91,6 +92,13 @@ curl -s http://localhost:7863/pool
 | `pool_min` | `CNB2API_POOL_MIN` | `2` | 凭证池最小凭证数 |
 | `pool_max` | `CNB2API_POOL_MAX` | `8` | 凭证池最大凭证数（并发上限） |
 | `ttl_minutes` | `CNB2API_TTL_MINUTES` | `30` | 凭证有效期（分钟） |
+
+### 模型说明
+
+| 模型 | 说明 |
+|---|---|
+| `deepseek-v4-flash` | 默认模型 |
+| `deepseek-v4-pro` | 已支持，但**上游实际仍调用 flash**（CNB 上游仅暴露 flash 接口，pro 为前端映射），输出行为与 flash 有差异（如写诗风格） |
 
 ## API
 
