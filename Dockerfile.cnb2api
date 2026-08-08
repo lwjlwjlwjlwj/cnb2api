@@ -1,0 +1,6 @@
+FROM alpine:3.20
+WORKDIR /app
+COPY cnb2api-static /app/cnb2api
+COPY config.example.json /app/config.json
+EXPOSE 7863
+CMD ["/app/cnb2api", "-config", "/app/config.json"]

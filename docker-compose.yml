@@ -25,7 +25,7 @@ services:
       cnb2api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8080/healthz', timeout=3).status==200 else 1)"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -43,7 +43,7 @@ services:
     networks:
       - cnb2api-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7863/healthz"]
+      test: ["CMD", "wget", "-Y", "off", "-q", "-O", "-", "http://localhost:7863/healthz"]
       interval: 10s
       timeout: 5s
       retries: 3

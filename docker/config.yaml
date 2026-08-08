@@ -15,7 +15,7 @@ upstreams:
   - name: cnb2api
     type: openai_compat
     base_url: "http://cnb2api:7863/v1"   # 容器内网访问 cnb2api
-    api_key: "cnb-sk-8f3a2f6a3c2b4e5d6f7a8b9c0d1e2f3b4c"  # TODO: 替换为 cnb2api 的真实 key
+    api_key: "cnb-sk-8f3a2b1c9d4e5f6a7b8c9d0e1f2a3b4c"  # TODO: 替换为 cnb2api 的真实 key
     models: ["*"]
     native_fc: false          # CNB 不支持原生 FC，走 XYML 提示词路径
     is_default: true
