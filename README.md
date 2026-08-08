@@ -137,6 +137,9 @@ CNB 的 NPC 聊天接口 `POST /ai/chat/completions` 采用 CSRF 双因子校验
 
 ## Docker 编排（ToolForge + cnb2api）
 
+[**ToolForge**](https://github.com/YuJunZhiXue/toolforge) 是通用 LLM 工具调用中间件（原生 FC 透传 + XYML 提示词回退），
+开源仓库：<https://github.com/YuJunZhiXue/toolforge>
+
 一键启动完整链路：**客户端 → ToolForge（XYML 工具调用中间件）→ cnb2api → CNB**。
 ToolForge 作为前置，通过提示词注入（XYML）实现 CNB 不原生支持的工具调用。
 
