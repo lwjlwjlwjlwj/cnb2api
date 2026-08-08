@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  toolforge:
+    build:
+      context: ./docker/toolforge
+      dockerfile: Dockerfile
+    container_name: cnb2api-toolforge
+    ports:
+      - "18080:8080"
+    environment:
+      # 清空代理变量（避免访问内网 cnb2api 走代理）
+      http_proxy: ""
+      https_proxy: ""
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      no_proxy: "*"
+      NO_PROXY: "*"
+      TOOLFORGE_CONFIG: /app/config.yaml
+    volumes:
+      - ./docker/config.yaml:/app/config.yaml:ro
+    networks:
+      - cnb2api-net
+    depends_on:
+      cnb2api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8080/healthz', timeout=3).status==200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  cnb2api:
+    build:
+      context: .
+      dockerfile: Dockerfile.cnb2api
+    container_name: cnb2api-gateway
+    ports:
+      - "7863:7863"
+    volumes:
+      - ./config.example.json:/app/config.json:ro
+    networks:
+      - cnb2api-net
+    healthcheck:
+      test: ["CMD", "wget", "-Y", "off", "-q", "-O", "-", "http://localhost:7863/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  cnb2api-net:
+    driver: bridge

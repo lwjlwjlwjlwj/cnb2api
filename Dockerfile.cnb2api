@@ -1,0 +1,14 @@
+# 多阶段构建：编译 Go 二进制 + 轻量运行
+FROM golang:1.22-alpine AS builder
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o /out/cnb2api ./cmd/server
+
+FROM alpine:3.20
+WORKDIR /app
+COPY --from=builder /out/cnb2api /app/cnb2api
+COPY config.example.json /app/config.json
+EXPOSE 7863
+CMD ["/app/cnb2api", "-config", "/app/config.json"]

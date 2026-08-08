@@ -1,0 +1,38 @@
+# ToolForge 配置 — 作为 cnb2api 的前置中间件
+# 客户端 → ToolForge(:18080) → cnb2api(:7863 容器内网) → CNB
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  timeout_seconds: 180
+
+client_authentication:
+  enabled: true
+  allowed_keys:
+    - "test-key-123"          # TODO: 替换为你的客户端访问 key
+
+upstreams:
+  - name: cnb2api
+    type: openai_compat
+    base_url: "http://cnb2api:7863/v1"   # 容器内网访问 cnb2api
+    api_key: "cnb-sk-8f3a2b1c9d4e5f6a7b8c9d0e1f2a3b4c"  # TODO: 替换为 cnb2api 的真实 key
+    models: ["*"]
+    native_fc: false          # CNB 不支持原生 FC，走 XYML 提示词路径
+    is_default: true
+
+routing:
+  aliases: {}
+
+features:
+  fc_mode: auto               # auto | prefer_native | force_prompt
+  enable_streaming: true
+  enable_fc_error_retry: true
+  fc_error_retry_max: 2
+  strip_think_tags: true
+  inject_protocol: XYML
+  convert_developer_to_system: true
+  key_passthrough: false
+  model_passthrough: false
+  enable_cli_profiles: true
+  obfuscate_tool_names: false
+  enable_metrics: true

@@ -18,3 +18,5 @@ data/
 
 # 系统
 .DS_Store
+# Docker build artifacts (required for multi-stage builds without external images)
+cnb2api-static
