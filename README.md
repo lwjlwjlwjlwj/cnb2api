@@ -16,9 +16,10 @@
 - 🔑 **可选鉴权** — 配置 `api_key` 后需 Bearer token 访问
 - 🏗 **Go 单二进制** — 无外部依赖，`go build` 即得
 
-> ⚠️ **工具调用尚未实现** — 当前为纯文本透传模式。CNB 上游禁止原生 `tools` 参数（403 `Agent calls are not allowed`），
-> 客户端声明的工具会被透传，但模型返回的 `tool_calls` 不经过解析/执行/桥接，直接以原始 XML 文本形式返回。
-> 工具调用重塑（工具注入 prompt → 解析 `<tool_call>` 块 → 还原标准 tool_calls）为规划中的功能。
+> ⚠️ **原生工具调用受限** — CNB 上游禁止原生 `tools` 参数（403 `Agent calls are not allowed`）。
+> 客户端声明的工具会被透传，但模型返回的 `tool_calls` 不经过解析/执行/桥接。
+>
+> ✅ **推荐方案：搭配 ToolForge 中间件**（见下方 [Docker 编排](#docker-编排toolforge--cnb2api)）— 通过 XYML 提示词注入实现完整工具调用支持。
 
 ## 快速开始
 
@@ -133,6 +134,47 @@ CNB 的 NPC 聊天接口 `POST /ai/chat/completions` 采用 CSRF 双因子校验
 
 本项目的 `internal/auth` 包每次用独立 cookie jar 建立新会话获取配对凭证，
 多个凭证组成池供并发请求轮转使用。
+
+## Docker 编排（ToolForge + cnb2api）
+
+一键启动完整链路：**客户端 → ToolForge（XYML 工具调用中间件）→ cnb2api → CNB**。
+ToolForge 作为前置，通过提示词注入（XYML）实现 CNB 不原生支持的工具调用。
+
+```
+┌────────┐   tools请求   ┌────────────┐   XYML注入   ┌───────────┐    ┌─────┐
+│ 客户端  │ ───────────▶ │  ToolForge  │ ──────────▶ │  cnb2api  │ ──▶ │ CNB │
+│        │ ◀─────────── │  (:18080)   │ ◀────────── │  (:7863)  │ ◀── │     │
+└────────┘   tool_calls  └────────────┘   标准响应   └───────────┘    └─────┘
+```
+
+### 启动
+
+```bash
+# 拉取子模块（ToolForge 源码）
+git submodule update --init --recursive
+
+# 编辑配置：docker/config.yaml 中的 allowed_keys（客户端访问 key）
+# 和 api_key（cnb2api 的鉴权 key，与 config.example.json 一致）
+
+# 一键启动
+ docker compose up -d --build
+```
+
+### 服务端口
+
+| 服务 | 端口 | 说明 |
+|------|------|------|
+| ToolForge | `18080` | OpenAI 兼容入口（带 tools 支持） |
+| cnb2api | `7863` | 内部网关（仅容器网络内访问） |
+
+客户端接入：`base_url: http://<host>:18080/v1`，`api_key: <docker/config.yaml 的 allowed_keys>`。
+
+### 说明
+
+- ToolForge 以 git submodule 引入（`docker/toolforge` → `YuJunZhiXue/toolforge`）
+- 两服务共享 `cnb2api-net` 网络，ToolForge 通过容器名 `cnb2api:7863` 访问网关
+- 支持非流式 + 流式工具调用（标准 OpenAI `tool_calls` 格式）
+- 国内网络环境：Dockerfile 已使用清华 pip 镜像源，避免拉取超时
 
 ## 目录结构
 
