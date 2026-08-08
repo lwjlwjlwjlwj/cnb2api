@@ -2,8 +2,11 @@
   "listen": ":7863",
   "api_key": "cnb-sk-8f3a2b1c9d4e5f6a7b8c9d0e1f2a3b4c",
   "model": "deepseek-v4-flash",
-  "models": ["deepseek-v4-flash", "deepseek-v4-pro"],
+  "models": [
+    "deepseek-v4-flash",
+    "deepseek-v4-pro"
+  ],
   "pool_min": 2,
-  "pool_max": 8,
+  "pool_max": 32,
   "ttl_minutes": 30
 }

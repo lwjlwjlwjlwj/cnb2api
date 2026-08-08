@@ -14,9 +14,9 @@ client_authentication:
 upstreams:
   - name: cnb2api
     type: openai_compat
-    base_url: "http://cnb2api:7863/v1"   # 容器内网访问 cnb2api
+    base_url: "http://cnb2api:7863/v1"   # 容器内网 IP 直连（DNS 不稳定）
     api_key: "cnb-sk-8f3a2b1c9d4e5f6a7b8c9d0e1f2a3b4c"  # TODO: 替换为 cnb2api 的真实 key
-    models: ["*"]
+    models: ["deepseek-v4-flash", "deepseek-v4-pro", "*"]
     native_fc: false          # CNB 不支持原生 FC，走 XYML 提示词路径
     is_default: true
 

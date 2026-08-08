@@ -345,13 +345,17 @@ func (s *Server) streamResponse(w http.ResponseWriter, resp *http.Response) {
 	// 纯文本透传:标准化转发上游 SSE chunk 为标准 OpenAI 格式
 	var stdID, stdModel string
 	var stdCreated int64
+	var stdUsage map[string]any
 	_ = upstream.ReadSSE(resp, func(chunk upstream.SSEChunk) error {
 		if chunk.IsDone {
-			// 收尾 chunk:finish_reason + [DONE]
+			// 收尾 chunk:finish_reason + usage + [DONE]
 			if stdID != "" {
 				final := map[string]any{
 					"id": stdID, "model": stdModel, "created": stdCreated, "object": "chat.completion.chunk",
 					"choices": []any{map[string]any{"index": 0, "delta": map[string]any{}, "finish_reason": "stop"}},
+				}
+				if stdUsage != nil {
+					final["usage"] = stdUsage
 				}
 				data, _ := json.Marshal(final)
 				w.Write([]byte("data: " + string(data) + "\n\n"))
@@ -361,9 +365,10 @@ func (s *Server) streamResponse(w http.ResponseWriter, resp *http.Response) {
 			return err
 		}
 		var obj struct {
-			ID      string `json:"id"`
-			Model   string `json:"model"`
-			Created int64  `json:"created"`
+			ID      string         `json:"id"`
+			Model   string         `json:"model"`
+			Created int64          `json:"created"`
+			Usage   map[string]any `json:"usage"`
 			Choices []struct {
 				Delta struct {
 					Content   string `json:"content"`
@@ -382,6 +387,9 @@ func (s *Server) streamResponse(w http.ResponseWriter, resp *http.Response) {
 		}
 		if obj.Created != 0 {
 			stdCreated = obj.Created
+		}
+		if obj.Usage != nil {
+			stdUsage = obj.Usage
 		}
 		for _, c := range obj.Choices {
 			if c.Delta.Content != "" {
